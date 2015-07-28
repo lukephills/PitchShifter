@@ -2,7 +2,7 @@
 
 ####No Grunt, no Bower, no RequireJS needed.
 
-A quick way to compile and bundle typescript applications with ease.
+Compile and bundle typescript applications with ease.
 
 Following the great article by [@jbrantly](https://github.com/jbrantly).
 You can read it [here](http://www.jbrantly.com/typescript-and-webpack/).

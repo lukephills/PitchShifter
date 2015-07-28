@@ -2,10 +2,9 @@
 
 ####No Grunt, no Bower, no RequireJS needed.
 
-Compile and bundle typescript applications with ease.
+Compile and bundle typescript applications and node modules with ease.
 
-Following the great article by [@jbrantly](https://github.com/jbrantly).
-You can read it [here](http://www.jbrantly.com/typescript-and-webpack/).
+Following the great [article](http://www.jbrantly.com/typescript-and-webpack/) by [@jbrantly](https://github.com/jbrantly).
 
 Install the node modules:
 `npm install`

@@ -9,6 +9,9 @@ Following the great [article](http://www.jbrantly.com/typescript-and-webpack/) b
 Install the node modules:
 `npm install`
 
+Install typscript definitions manager if you don't already have it.
+`npm install -g tsd`
+
 Install the typescript definition files:
 `tsd install`
 

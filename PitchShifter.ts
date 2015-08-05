@@ -1,50 +1,35 @@
 
 class PitchShifter {
 
-    private previousPitch = -1;
-    private delayTime = 0.50;
+    private previousPitch: number = -1;
+    private delayTime: number = 0.50;
 
-    public static get FADE_TIME() {
+    public static get FADE_TIME(): number {
         return 0.25;
     }
 
-    public static get BUFFER_TIME() {
+    public static get BUFFER_TIME(): number {
         return 0.50;
     }
 
-    private shiftDownBuffer;
-    private shiftUpBuffer;
-    private context;
-    public input: any;
-    public output: any;
+    private shiftDownBuffer: AudioBuffer;
+    private shiftUpBuffer: AudioBuffer;
+    private context: AudioContext;
 
-    //private mod1;
-    //private mod2;
-    private bufferSources: any[] = [];
+    public input: GainNode;
+    public output: GainNode;
 
-    //private mod1Gain;
-    //private mod2Gain;
-    //private mod3Gain;
-    //private mod4Gain;
-    private modGains: any[] = [];
+    private bufferSources: AudioBufferSourceNode[] = [];
 
-    //private modGain1;
-    //private modGain2;
-    private delayGains: any[] = [];
+    private modGains: GainNode[] = [];
 
-    //private delay1;
-    //private delay2;
-    private delays: any[] = [];
+    private delayGains: GainNode[] = [];
 
-    //private fade1;
-    //private fade2;
-    private fadeBufferSources: any[] = [];
+    private delays: any[] = []; //Should be type DelayNode but typescript doesn't like it
 
-    //private mix1;
-    //private mix2;
-    private mixGains: any[] = [];
+    private fadeBufferSources: AudioBufferSourceNode[] = [];
 
-
+    private mixGains: any[] = []; //Should be type GainNode but typescript doesn't like it
 
 
     constructor(context){
@@ -53,11 +38,6 @@ class PitchShifter {
         this.input = this.context.createGain();
         this.output = this.context.createGain();
 
-        // Delay modulation. //TODO: for loop!
-        //var mod1 = this.context.createBufferSource();
-        //var mod2 = this.context.createBufferSource();
-        //var mod3 = this.context.createBufferSource();
-        //var mod4 = this.context.createBufferSource();
         for (let i = 0; i < 4; i++){
             this.bufferSources.push(this.context.createBufferSource());
         }
@@ -66,54 +46,26 @@ class PitchShifter {
         this.shiftUpBuffer = this.createDelayTimeBuffer(true);
 
         //todo: for loop!
-        this.bufferSources.forEach((bufferSource, i: number) => {
+        this.bufferSources.forEach((bufferSource: AudioBufferSourceNode, i: number) => {
             bufferSource.buffer = i < 2 ? this.shiftDownBuffer : this.shiftUpBuffer;
             bufferSource.loop = true;
         });
-        //todo for loop!
-        //this.bufferSources[0].buffer = this.shiftDownBuffer;
-        //this.bufferSources[1].buffer = this.shiftDownBuffer;
-        //this.bufferSources[2].buffer = this.shiftUpBuffer;
-        //this.bufferSources[3].buffer = this.shiftUpBuffer;
-        //this.bufferSources[0].loop = true;
-        //this.bufferSources[1].loop = true;
-        //this.bufferSources[2].loop = true;
-        //this.bufferSources[3].loop = true;
 
         // for switching between oct-up and oct-down //todo FOR LOOP!
         for (let i = 0; i < 4; i++){
             this.modGains.push(this.context.createGain());
             this.bufferSources[i].connect(this.modGains[i])
         }
-        //var mod1Gain = this.context.createGain();
-        //var mod2Gain = this.context.createGain();
-        //var mod3Gain = this.context.createGain();
-        //var mod4Gain = this.context.createGain();
 
-        this.modGains.forEach((modGain, i: number) => {
+        this.modGains.forEach((modGain: GainNode, i: number) => {
             modGain.gain.value = i < 2 ? 1 : 0;
         });
-        //mod3Gain.gain.value = 0;
-        //mod4Gain.gain.value = 0;
 
-
-        //this.bufferSources[0].connect(mod1Gain);
-        //this.bufferSources[1].connect(mod2Gain);
-        //this.bufferSources[2].connect(mod3Gain);
-        //this.bufferSources[3].connect(mod4Gain);
-
-        // Delay amount for changing pitch.
-        //var modGain1 = this.context.createGain();
-        //var modGain2 = this.context.createGain();
-        //var delay1 = this.context.createDelay();
-        //var delay2 = this.context.createDelay();
         for (let i = 0; i < 2; i++){
             this.delayGains.push(this.context.createGain());
             this.delays.push(this.context.createDelay());
             this.delayGains[i].connect(this.delays[i].delayTime);
         }
-
-
 
         for (let i = 0; i < 4; i++) {
             if (i % 2 === 0){
@@ -122,30 +74,8 @@ class PitchShifter {
                 this.modGains[i].connect(this.delayGains[1])
             }
         }
-        //mod1Gain.connect(modGain1);
-        //mod2Gain.connect(modGain2);
-        //mod3Gain.connect(modGain1);
-        //mod4Gain.connect(modGain2);
 
-        //modGain1.connect(delay1.delayTime);
-        //modGain2.connect(delay2.delayTime);
-
-        // Crossfading.
-        //var fade1 = this.context.createBufferSource();
-        //var fade2 = this.context.createBufferSource();
-        var fadeBuffer = this.createFadeBuffer();
-        //fade1.buffer = fadeBuffer;
-        //fade2.buffer = fadeBuffer;
-        //fade1.loop = true;
-        //fade2.loop = true;
-
-        //var mix1 = this.context.createGain();
-        //var mix2 = this.context.createGain();
-        //mix1.gain.value = 0;
-        //mix2.gain.value = 0;
-
-        //fade1.connect(mix1.gain);
-        //fade2.connect(mix2.gain);
+        var fadeBuffer: AudioBuffer = this.createFadeBuffer();
 
         // Connect processing graph.
         for (let i = 0; i < 2; i++){
@@ -163,12 +93,6 @@ class PitchShifter {
             this.mixGains[i].connect(this.output);
 
         }
-        //this.input.connect(delay1);
-        //this.input.connect(delay2);
-        //delay1.connect(mix1);
-        //delay2.connect(mix2);
-        //mix1.connect(this.output);
-        //mix2.connect(this.output);
 
         // Start
         var t = this.context.currentTime + 0.050;
@@ -180,68 +104,42 @@ class PitchShifter {
         this.fadeBufferSources[0].start(t);
         this.fadeBufferSources[1].start(t2);
 
-        //this.mod1 = this.bufferSources[0];
-        //this.mod2 = this.bufferSources[1];
-        //this.mod1Gain = mod1Gain;
-        //this.mod2Gain = mod2Gain;
-        //this.mod3Gain = mod3Gain;
-        //this.mod4Gain = mod4Gain;
-        //this.modGain1 = modGain1;
-        //this.modGain2 = modGain2;
-        //this.fade1 = fade1;
-        //this.fade2 = fade2;
-        //this.mix1 = mix1;
-        //this.mix2 = mix2;
-        //this.delay1 = delay1;
-        //this.delay2 = delay2;
-
         this.setDelay(this.delayTime);
     }
 
-    public setDelay(delayTime) {
-        this.delayGains.forEach((delayGain) => {
+    private setDelay(delayTime): void {
+        this.delayGains.forEach((delayGain: GainNode) => {
             delayGain.gain.setTargetAtTime(0.5*delayTime, 0, 0.010);
         });
-        //this.modGain1.gain.setTargetAtTime(0.5*delayTime, 0, 0.010);
-        //this.modGain2.gain.setTargetAtTime(0.5*delayTime, 0, 0.010);
     }
 
-    get PitchOffset(): number {
+    public get PitchOffset(): number {
         return this.previousPitch;
     }
 
-    set PitchOffset(multiplier) {
+    public set PitchOffset(multiplier: number) {
         if (multiplier>0) { // pitch up
 
-            this.modGains.forEach((modGain, i: number) => {
+            this.modGains.forEach((modGain: GainNode, i: number) => {
                 modGain.gain.value = i < 2 ? 0 : 1;
             });
-            //this.mod1Gain.gain.value = 0;
-            //this.mod2Gain.gain.value = 0;
-            //this.mod3Gain.gain.value = 1;
-            //this.mod4Gain.gain.value = 1;
+
         } else { // pitch down
 
-            this.modGains.forEach((modGain, i: number) => {
+            this.modGains.forEach((modGain: GainNode, i: number) => {
                 modGain.gain.value = i < 2 ? 1 : 0;
             });
-            //this.mod1Gain.gain.value = 1;
-            //this.mod2Gain.gain.value = 1;
-            //this.mod3Gain.gain.value = 0;
-            //this.mod4Gain.gain.value = 0;
         }
-        this.setDelay(this.delayTime*Math.abs(multiplier));
+        this.setDelay(this.delayTime * Math.abs(multiplier));
         this.previousPitch = multiplier;
     }
 
-    private createFadeBuffer() {
-        var length1 = PitchShifter.BUFFER_TIME * this.context.sampleRate;
-        var length2 = (PitchShifter.BUFFER_TIME - 2 * PitchShifter.FADE_TIME) * this.context.sampleRate;
-        var length = length1 + length2;
-        var buffer = this.context.createBuffer(1, length, this.context.sampleRate);
-        var p = buffer.getChannelData(0);
-
-        console.log("createFadeBuffer() length = " + length);
+    private createFadeBuffer(): AudioBuffer {
+        const length1: number = PitchShifter.BUFFER_TIME * this.context.sampleRate;
+        const length2: number = (PitchShifter.BUFFER_TIME - 2 * PitchShifter.FADE_TIME) * this.context.sampleRate;
+        const length: number = length1 + length2;
+        var buffer: AudioBuffer = this.context.createBuffer(1, length, this.context.sampleRate);
+        var p: any = buffer.getChannelData(0);
 
         var fadeLength = PitchShifter.FADE_TIME * this.context.sampleRate;
 
@@ -272,14 +170,12 @@ class PitchShifter {
         return buffer;
     }
 
-    private createDelayTimeBuffer(shiftUp) {
-        const length1 = PitchShifter.BUFFER_TIME * this.context.sampleRate;
-        const length2 = (PitchShifter.BUFFER_TIME - 2 * PitchShifter.FADE_TIME) * this.context.sampleRate;
-        const length = length1 + length2;
-        const buffer = this.context.createBuffer(1, length, this.context.sampleRate);
-        let p = buffer.getChannelData(0);
-
-        console.log("createDelayTimeBuffer() length = " + length);
+    private createDelayTimeBuffer(shiftUp): AudioBuffer {
+        const length1: number = PitchShifter.BUFFER_TIME * this.context.sampleRate;
+        const length2: number = (PitchShifter.BUFFER_TIME - 2 * PitchShifter.FADE_TIME) * this.context.sampleRate;
+        const length: number = length1 + length2;
+        const buffer: AudioBuffer = this.context.createBuffer(1, length, this.context.sampleRate);
+        let p: any = buffer.getChannelData(0);
 
         // 1st part of cycle
         for (let i = 0; i < length1; ++i) {
@@ -297,26 +193,6 @@ class PitchShifter {
         }
 
         return buffer;
-    }
-
-    connect(unit, outputNum, inputNum) {
-        if (Array.isArray(this.output)){
-            outputNum = outputNum ? outputNum : 0;
-            this.output[outputNum].connect(unit, 0, inputNum);
-        } else {
-            this.output.connect(unit, outputNum, inputNum);
-        }
-        return this;
-    }
-
-    disconnect(outputNum) {
-        if (Array.isArray(this.output)){
-            outputNum = outputNum ? outputNum : 0;
-            this.output[outputNum].disconnect();
-        } else {
-            this.output.disconnect();
-        }
-        return this;
     }
 }
 

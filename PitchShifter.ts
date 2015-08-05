@@ -2,14 +2,14 @@
 class PitchShifter {
 
     private previousPitch = -1;
-    private delayTime = 0.100;
+    private delayTime = 0.50;
 
     public static get FADE_TIME() {
-        return 0.050;
+        return 0.25;
     }
 
     public static get BUFFER_TIME() {
-        return 0.100;
+        return 0.50;
     }
 
     private shiftDownBuffer;

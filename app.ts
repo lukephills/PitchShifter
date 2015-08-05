@@ -16,8 +16,8 @@ gain.connect(tone.audioContext.destination);
 osc.start();
 
 setInterval(()=> {
-    pitchShift.PitchOffset = getRandomArbitrary(-2, 2)
-}, 500);
+    pitchShift.PitchOffset = getRandomArbitrary(-1, 1)
+}, 1000);
 
 
 function getRandomArbitrary(min, max) {
